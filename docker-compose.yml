@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  reports-browser:
+    image: nordz0r/reports-browser:latest
+    container_name: reports-browser
+    environment:
+      - FOLDER
+    volumes:
+      - /root/GraphQL/dialer/reports:/root/GraphQL/dialer/reports
+    ports:
+      - "8080:8080"
+    restart: always

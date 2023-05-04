@@ -1,0 +1,98 @@
+{% extends 'header.html' %}
+
+{% block title %}
+Reports browser
+{% endblock %}
+
+{% block body %}
+
+<div class="container">
+  <h1 id="h1" class="display-4 text-center">Отчеты Dialer</h1>
+</div>
+<div class="container">
+  <table class="table">
+    <thead>
+      <tr class="head">
+        <th id="id" scope="col">Extention</th>
+        <th id="date_start" scope="col">Date Start</th>
+        <th id="date_end" scope="col">Date End</th>
+        <th id="file_size" scope="col">File Size</th>
+        <th id="download" scope="col">Download</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for report in reports %}
+        <tr>
+            <td id="td">{{ report.id }}</td>
+            <td id="td">{{ report.date_start }}</td>
+            <td id="td">{{ report.date_end }}</td>
+            <td id="td">{{ report.file_size }}</td>
+            <td id="td"><a href="/download/{{ report.id }}_{{ report.date_start }}_{{ report.date_end }}.xls">Download</a></td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<script>
+  function refreshTable() {
+    fetch(window.location.href, {cache: 'no-store'})
+      .then(response => response.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newTable = doc.querySelector('.table');
+        document.querySelector('.table').replaceWith(newTable);
+      });
+  }
+  $(document).ready(function() {
+    let sortOrder = {
+      id: 'asc',
+      date_start: 'asc',
+      date_end: 'asc',
+      file_size: 'asc',
+    };
+
+    function compare(a, b, key, order = 'asc') {
+      if (key === 'file_size') {
+        a = parseFloat(a[key].split(' ')[0]);
+        b = parseFloat(b[key].split(' ')[0]);
+      } else {
+        a = a[key];
+        b = b[key];
+      }
+
+      if (order === 'asc') {
+        return a < b ? -1 : a > b ? 1 : 0;
+      } else {
+        return a < b ? 1 : a > b ? -1 : 0;
+      }
+    }
+
+    $('th').click(function() {
+      let column = $(this).attr('id');
+      let reports = {{ reports | tojson }};
+      sortOrder[column] = sortOrder[column] === 'asc' ? 'desc' : 'asc';
+      reports.sort((a, b) => compare(a, b, column, sortOrder[column]));
+      displayTable(reports);
+    });
+
+    function displayTable(reports) {
+      let tbody = $('tbody');
+      tbody.empty();
+      for (const report of reports) {
+        tbody.append(`
+          <tr>
+            <td id="td">${report.id}</td>
+            <td id="td">${report.date_start}</td>
+            <td id="td">${report.date_end}</td>
+            <td id="td">${report.file_size}</td>
+            <td id="td"><a href="/download/${report.id}_${report.date_start}_${report.date_end}.xls">Download</a></td>
+          </tr>
+        `);
+      }
+    }
+  });
+</script>
+
+{% endblock %}
+
