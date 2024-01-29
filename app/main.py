@@ -36,7 +36,7 @@ def index():
 
     # Сортировка списка отчетов по дате начала, от самого нового к самому старому
     reports = sorted(reports, key=lambda r: datetime.strptime(r['date_start'], '%Y-%m-%d'), reverse=True)
-    
+
     return render_template('index.html', reports=reports)
 
 
